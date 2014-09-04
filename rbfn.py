@@ -135,3 +135,63 @@ class HyperplaneRBFN(NormalizedRBFN):
             self.center_weights += c_delta
 
         return self
+
+
+class AdaptiveRBFN(NormalizedRBFN):
+    def __init__(self, neurons, indim, bases, outdim, alpha, eta):
+        """Assumes Gaussian neurons"""
+        super(AdaptiveRBFN, self).__init__(neurons, indim, bases, outdim,
+                                           alpha)
+        self.eta = eta
+
+    def train(self, x, y):
+        for _x, _y in zip(x, y):
+            p = self.evaluate(_x)
+            error = _y - p
+
+            delta = error.reshape((len(error), 1)) * self.h
+            self.weights += self.alpha * delta
+
+            m_delta = self.eta*delta*((2*self.neurons.c/self.neurons.sigma).T*(
+                self.weights - p))
+
+            self.neurons.mu += m_delta.T
+            self.neurons.sigma += m_delta.T * self.neurons.c
+
+        return self
+
+
+class AdaptiveHyperplaneRBFN(HyperplaneRBFN):
+    def __init__(self, neurons, indim, bases, outdim, alpha, eta):
+        """Assumes Gaussian neurons"""
+        super(AdaptiveHyperplaneRBFN, self).__init__(neurons, indim, bases,
+                                                     outdim, alpha)
+        self.eta = eta
+
+    def train(self, x, y):
+        for _x, _y in zip(x, y):
+            p = self.evaluate(_x)
+            error = _y - p
+
+            delta = error.reshape((len(error), 1)) * self.h
+            self.weights += self.alpha * delta
+
+            c_delta = ((np.ones(self.center_weights.shape) *
+                       delta.reshape((self.outdim, self.bases, 1))) *
+                       self.neurons.c)
+            self.center_weights += c_delta
+
+            m1 = 2*self.neurons.c/self.neurons.sigma
+            m2 = np.sum(self.center_weights*self.neurons.c, axis=2)
+            m3 = self.weights - p
+            m4 = np.squeeze(self.center_weights/self.neurons.sigma)
+
+            m_delta = self.eta * delta * (m1.T * (m2 + m3) - m4)
+            # m_delta = self.eta*delta*((2*self.neurons.c/self.neurons.sigma).T *
+            #     (np.sum(self.center_weights*self.neurons.c, axis=2) +
+            #      self.weights - p) - self.center_weights/self.neurons.sigma)
+
+            self.neurons.mu += m_delta.T
+            self.neurons.sigma += m_delta.T * self.neurons.c
+
+        return self

@@ -3,10 +3,11 @@ import numpy as np
 from sklearn.metrics import r2_score
 
 
-from rbfn import RBFN, NormalizedRBFN, HyperplaneRBFN, GaussianRBF
+from rbfn import RBFN, NormalizedRBFN, HyperplaneRBFN, GaussianRBF, \
+    AdaptiveRBFN, AdaptiveHyperplaneRBFN
 
 ## 1d to 1d
-indim, bases, outdim, alpha = 1, 5, 1, 0.1
+indim, bases, outdim, alpha = 1, 5, 1, 0.5
 
 mu = np.linspace(0, 3.5, num=bases, endpoint=True).reshape((bases, indim))
 sigma = np.ones((bases**indim, indim)) * 0.4
@@ -15,10 +16,16 @@ rbfn1 = RBFN(neurons, indim, bases, outdim, alpha)
 rbfn2 = NormalizedRBFN(neurons, indim, bases, outdim, alpha)
 rbfn3 = HyperplaneRBFN(neurons, indim, bases, outdim, alpha)
 
-networks = [rbfn1, rbfn2, rbfn3]
+bases = 3
+mu = np.linspace(0, 3.5, num=bases, endpoint=True).reshape((bases, indim))
+sigma = np.ones((bases**indim, indim)) * 0.8
+neurons = GaussianRBF(mu, sigma)
+rbfn4 = AdaptiveRBFN(neurons, indim, bases, outdim, alpha, 0.01)
+rbfn5 = AdaptiveHyperplaneRBFN(neurons, indim, bases, outdim, alpha, 0.01)
+networks = [rbfn1, rbfn2, rbfn3, rbfn4, rbfn5]
 
 f = lambda _x: 2*np.sin(_x) + np.cos(4*_x) + np.sqrt(_x)
-x_train = 3.5 * np.random.random(1000)
+x_train = 3.5 * np.random.random(5000)
 y_train = f(x_train)
 
 x_test = np.arange(0, 3.5, 0.01)
