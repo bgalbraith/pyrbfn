@@ -38,6 +38,20 @@ class GaussianRBF(RadialBasisFunctionNeurons):
         return np.exp(-0.5*np.sum(self.c**2, axis=1))
 
 
+class VonMisesRBF(RadialBasisFunctionNeurons):
+    def __init__(self, mu, kappa):
+        super(VonMisesRBF, self).__init__()
+        self.mu = mu
+        self.kappa = kappa
+
+    def get_distance(self, x):
+        return self.kappa * np.cos(x - self.mu)
+
+    def activation(self, x):
+        self.c = self.get_distance(x)
+        return np.exp(np.sum(self.c, axis=1))
+
+
 class RBFN(object):
     """
     Radial Basis Function Network
