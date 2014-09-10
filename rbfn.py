@@ -183,13 +183,10 @@ class AdaptiveHyperplaneRBFN(HyperplaneRBFN):
 
             m1 = 2*self.neurons.c/self.neurons.sigma
             m2 = np.sum(self.center_weights*self.neurons.c, axis=2)
-            m3 = self.weights - p
+            m3 = self.weights - p.reshape((len(p), 1))
             m4 = np.squeeze(self.center_weights/self.neurons.sigma)
 
-            m_delta = self.eta * delta * (m1.T * (m2 + m3) - m4)
-            # m_delta = self.eta*delta*((2*self.neurons.c/self.neurons.sigma).T *
-            #     (np.sum(self.center_weights*self.neurons.c, axis=2) +
-            #      self.weights - p) - self.center_weights/self.neurons.sigma)
+            m_delta = self.eta * delta * (m1.T * (m2 + m3) - m4.T)
 
             self.neurons.mu += m_delta.T
             self.neurons.sigma += m_delta.T * self.neurons.c
