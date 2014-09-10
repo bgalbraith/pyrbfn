@@ -152,11 +152,17 @@ class AdaptiveRBFN(NormalizedRBFN):
             delta = error.reshape((len(error), 1)) * self.h
             self.weights += self.alpha * delta
 
-            m_delta = self.eta*delta*((2*self.neurons.c/self.neurons.sigma).T*(
-                self.weights - p))
+            m1 = 2*self.neurons.c / self.neurons.sigma  # (bases, indim)
+            m2 = self.weights - p.reshape((len(p), 1))  # (outdim, bases)
 
-            self.neurons.mu += m_delta.T
-            self.neurons.sigma += m_delta.T * self.neurons.c
+            m1 = np.tile(m1, (self.outdim, 1, 1))  # (outdim, bases, indim)
+            m2 = np.tile(np.expand_dims(m2, axis=2), (1, 1, self.indim))
+            delta = np.tile(np.expand_dims(delta, axis=2), (1, 1, self.indim))
+
+            m_delta = self.eta * np.sum(delta * (m1 * m2), axis=0)
+
+            self.neurons.mu += m_delta
+            self.neurons.sigma += m_delta * self.neurons.c
 
         return self
 
@@ -181,14 +187,19 @@ class AdaptiveHyperplaneRBFN(HyperplaneRBFN):
                        self.neurons.c)
             self.center_weights += c_delta
 
-            m1 = 2*self.neurons.c/self.neurons.sigma
+            m1 = 2*self.neurons.c / self.neurons.sigma
             m2 = np.sum(self.center_weights*self.neurons.c, axis=2)
             m3 = self.weights - p.reshape((len(p), 1))
-            m4 = np.squeeze(self.center_weights/self.neurons.sigma)
+            m4 = self.center_weights / self.neurons.sigma
 
-            m_delta = self.eta * delta * (m1.T * (m2 + m3) - m4.T)
+            m1 = np.tile(m1, (self.outdim, 1, 1))
+            m2 = np.tile(np.expand_dims(m2, axis=2), (1, 1, self.indim))
+            m3 = np.tile(np.expand_dims(m3, axis=2), (1, 1, self.indim))
+            delta = np.tile(np.expand_dims(delta, axis=2), (1, 1, self.indim))
 
-            self.neurons.mu += m_delta.T
-            self.neurons.sigma += m_delta.T * self.neurons.c
+            m_delta = self.eta * np.sum(delta * (m1 * (m2 + m3) - m4), axis=0)
+
+            self.neurons.mu += m_delta
+            self.neurons.sigma += m_delta * self.neurons.c
 
         return self

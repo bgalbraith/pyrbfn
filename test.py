@@ -90,4 +90,48 @@ for network in networks:
     print '%0.3f %s' % (r2_score(y_test, p), network.__class__.__name__)
     plt.plot(x_test[idx, 0], p[idx])
 
+
+###############################################################################
+## 3d to 2d
+###############################################################################
+indim, bases, outdim, alpha = 3, 9, 2, 0.5
+a = np.linspace(0, 3.5, num=bases, endpoint=True)
+mu = np.array(np.meshgrid(*((a,)*indim))).reshape(indim, bases**indim).T
+sigma = np.ones((bases**indim, indim)) * 0.2
+neurons = GaussianRBF(mu, sigma)
+rbfn1 = RBFN(neurons, indim, bases, outdim, alpha)
+rbfn2 = NormalizedRBFN(neurons, indim, bases, outdim, alpha)
+rbfn3 = HyperplaneRBFN(neurons, indim, bases, outdim, alpha)
+
+bases = 6
+a = np.linspace(0, 3.5, num=bases, endpoint=True)
+mu = np.array(np.meshgrid(*((a,)*indim))).reshape(indim, bases**indim).T
+sigma = np.ones((bases**indim, indim)) * 0.2
+neurons = GaussianRBF(mu, sigma)
+rbfn4 = AdaptiveRBFN(neurons, indim, bases, outdim, alpha, 0.001)
+rbfn5 = AdaptiveHyperplaneRBFN(neurons, indim, bases, outdim, alpha, 0.001)
+networks = [rbfn1, rbfn2, rbfn3, rbfn4, rbfn5]
+
+f3 = lambda _x, _y, _z: [3*np.cos(_x*(_y+2)) - 0.5*_z, _z**2 - np.exp(_x) + 0.2*_y]
+x_train = 3.5 * np.random.random((2000, 3))
+y_train = np.array(f3(x_train[:, 0], x_train[:, 1], x_train[:, 2])).T
+
+x_test = np.mgrid[0:3.5:0.5, 0:3.5:0.5, 0:3.5:0.5]
+x_test = x_test.reshape((indim, x_test.size / indim)).T
+y_test = np.array(f3(x_test[:, 0], x_test[:, 1], x_test[:, 2])).T
+idx = np.where(np.logical_and(x_test[:,1] == 2.0, x_test[:,2] == 2.0))[0]
+
+print '--- R3 -> R2 ---'
+plt.figure()
+plt.plot(x_test[idx, 0], y_test[idx], 'k', linewidth=3)
+for network in networks:
+    network.train(x_train, y_train)
+
+    p = np.zeros(y_test.shape)
+    for i, x in enumerate(x_test):
+        p[i] = network.evaluate(x)
+
+    print '%0.3f %s' % (r2_score(y_test, p), network.__class__.__name__)
+    plt.plot(x_test[idx, 0], p[idx])
+
 plt.show()
