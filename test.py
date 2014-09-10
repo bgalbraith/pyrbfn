@@ -33,6 +33,7 @@ y_train = f(x_train)
 x_test = np.arange(0, 3.5, 0.01)
 y_test = f(x_test)
 
+print '--- R1 -> R1 ---'
 plt.figure()
 plt.plot(x_test, y_test, 'k', linewidth=3)
 for network in networks:
@@ -42,10 +43,10 @@ for network in networks:
     for i, x in enumerate(x_test):
         p[i] = network.evaluate(x)
 
-    print '1d to 1d', r2_score(y_test, p), network.__class__.__name__
+    print '%.3f %s' % (r2_score(y_test, p), network.__class__.__name__)
     plt.plot(x_test, p)
 
-print '------'
+
 ###############################################################################
 ## 2d to 1d
 ###############################################################################
@@ -58,7 +59,7 @@ rbfn1 = RBFN(neurons, indim, bases, outdim, alpha)
 rbfn2 = NormalizedRBFN(neurons, indim, bases, outdim, alpha)
 rbfn3 = HyperplaneRBFN(neurons, indim, bases, outdim, alpha)
 
-bases = 7
+bases = 6
 a = np.linspace(0, 3.5, num=bases, endpoint=True)
 mu = np.array(np.meshgrid(*((a,)*indim))).reshape(indim, bases**indim).T
 sigma = np.ones((bases**indim, indim)) * 0.2
@@ -76,6 +77,7 @@ x_test = x_test.reshape((indim, x_test.size / indim)).T
 y_test = f2(x_test[:, 0], x_test[:, 1])
 idx = np.where(x_test[:, 1] == 2.0)[0]
 
+print '--- R2 -> R1 ---'
 plt.figure()
 plt.plot(x_test[idx, 0], y_test[idx], 'k', linewidth=3)
 for network in networks:
@@ -85,7 +87,7 @@ for network in networks:
     for i, x in enumerate(x_test):
         p[i] = network.evaluate(x)
 
-    print '2d to 1d', r2_score(y_test, p), network.__class__.__name__
+    print '%0.3f %s' % (r2_score(y_test, p), network.__class__.__name__)
     plt.plot(x_test[idx, 0], p[idx])
 
 plt.show()
