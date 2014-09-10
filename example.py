@@ -3,13 +3,13 @@ import numpy as np
 from sklearn.metrics import r2_score
 
 
-from rbfn import RBFN, NormalizedRBFN, HyperplaneRBFN, GaussianRBF, \
+from pyrbfn import RBFN, NormalizedRBFN, HyperplaneRBFN, GaussianRBF, \
     AdaptiveRBFN, AdaptiveHyperplaneRBFN
 
 ###############################################################################
 ## 1d to 1d
 ###############################################################################
-indim, bases, outdim, alpha = 1, 5, 1, 0.5
+indim, bases, outdim, alpha, eta = 1, 5, 1, 0.5, 0.001
 
 mu = np.linspace(0, 3.5, num=bases, endpoint=True).reshape((bases, indim))
 sigma = np.ones((bases**indim, indim)) * 0.4
@@ -21,9 +21,10 @@ rbfn3 = HyperplaneRBFN(neurons, indim, bases, outdim, alpha)
 bases = 3
 mu = np.linspace(0, 3.5, num=bases, endpoint=True).reshape((bases, indim))
 sigma = np.ones((bases**indim, indim)) * 0.4
-neurons = GaussianRBF(mu, sigma)
-rbfn4 = AdaptiveRBFN(neurons, indim, bases, outdim, alpha, 0.01)
-rbfn5 = AdaptiveHyperplaneRBFN(neurons, indim, bases, outdim, alpha, 0.01)
+neurons = GaussianRBF(mu.copy(), sigma.copy())
+rbfn4 = AdaptiveRBFN(neurons, indim, bases, outdim, alpha, eta)
+neurons = GaussianRBF(mu.copy(), sigma.copy())
+rbfn5 = AdaptiveHyperplaneRBFN(neurons, indim, bases, outdim, alpha, eta)
 networks = [rbfn1, rbfn2, rbfn3, rbfn4, rbfn5]
 
 f = lambda _x: 2*np.sin(_x) + np.cos(4*_x) + np.sqrt(_x)
@@ -50,7 +51,7 @@ for network in networks:
 ###############################################################################
 ## 2d to 1d
 ###############################################################################
-indim, bases, outdim, alpha = 2, 7, 1, 0.5
+indim, bases, outdim, alpha, eta = 2, 7, 1, 0.5, 0.001
 a = np.linspace(0, 3.5, num=bases, endpoint=True)
 mu = np.array(np.meshgrid(*((a,)*indim))).reshape(indim, bases**indim).T
 sigma = np.ones((bases**indim, indim)) * 0.2
@@ -59,13 +60,15 @@ rbfn1 = RBFN(neurons, indim, bases, outdim, alpha)
 rbfn2 = NormalizedRBFN(neurons, indim, bases, outdim, alpha)
 rbfn3 = HyperplaneRBFN(neurons, indim, bases, outdim, alpha)
 
-bases = 6
+bases = 5
 a = np.linspace(0, 3.5, num=bases, endpoint=True)
 mu = np.array(np.meshgrid(*((a,)*indim))).reshape(indim, bases**indim).T
 sigma = np.ones((bases**indim, indim)) * 0.2
-neurons = GaussianRBF(mu, sigma)
-rbfn4 = AdaptiveRBFN(neurons, indim, bases, outdim, alpha, 0.001)
-rbfn5 = AdaptiveHyperplaneRBFN(neurons, indim, bases, outdim, alpha, 0.001)
+neurons = GaussianRBF(mu.copy(), sigma.copy())
+rbfn4 = AdaptiveRBFN(neurons, indim, bases, outdim, alpha, eta)
+neurons = GaussianRBF(mu.copy(), sigma.copy())
+rbfn5 = AdaptiveHyperplaneRBFN(neurons, indim, bases, outdim, alpha, eta)
+
 networks = [rbfn1, rbfn2, rbfn3, rbfn4, rbfn5]
 
 f2 = lambda _x, _y: 3*np.cos((_x+2)*(_y+2)) - np.sin(6*_y) + _x
@@ -94,7 +97,7 @@ for network in networks:
 ###############################################################################
 ## 3d to 2d
 ###############################################################################
-indim, bases, outdim, alpha = 3, 9, 2, 0.5
+indim, bases, outdim, alpha, eta = 3, 9, 2, 0.5, 0.001
 a = np.linspace(0, 3.5, num=bases, endpoint=True)
 mu = np.array(np.meshgrid(*((a,)*indim))).reshape(indim, bases**indim).T
 sigma = np.ones((bases**indim, indim)) * 0.2
@@ -103,13 +106,15 @@ rbfn1 = RBFN(neurons, indim, bases, outdim, alpha)
 rbfn2 = NormalizedRBFN(neurons, indim, bases, outdim, alpha)
 rbfn3 = HyperplaneRBFN(neurons, indim, bases, outdim, alpha)
 
-bases = 6
+bases = 4
 a = np.linspace(0, 3.5, num=bases, endpoint=True)
 mu = np.array(np.meshgrid(*((a,)*indim))).reshape(indim, bases**indim).T
 sigma = np.ones((bases**indim, indim)) * 0.2
-neurons = GaussianRBF(mu, sigma)
-rbfn4 = AdaptiveRBFN(neurons, indim, bases, outdim, alpha, 0.001)
-rbfn5 = AdaptiveHyperplaneRBFN(neurons, indim, bases, outdim, alpha, 0.001)
+neurons = GaussianRBF(mu.copy(), sigma.copy())
+rbfn4 = AdaptiveRBFN(neurons, indim, bases, outdim, alpha, eta)
+neurons = GaussianRBF(mu.copy(), sigma.copy())
+rbfn5 = AdaptiveHyperplaneRBFN(neurons, indim, bases, outdim, alpha, eta)
+
 networks = [rbfn1, rbfn2, rbfn3, rbfn4, rbfn5]
 
 f3 = lambda _x, _y, _z: [3*np.cos(_x*(_y+2)) - 0.5*_z, _z**2 - np.exp(_x) + 0.2*_y]
